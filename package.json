@@ -1,0 +1,37 @@
+{
+  "name": "inverkids_agents_sdk",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "ts-node src/server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Angeltrek/Inverkids_Agents_SDK.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Angeltrek/Inverkids_Agents_SDK/issues"
+  },
+  "homepage": "https://github.com/Angeltrek/Inverkids_Agents_SDK#readme",
+  "dependencies": {
+    "@openai/agents": "^0.4.11",
+    "@openai/guardrails": "^0.2.1",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "openai": "^6.22.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.2.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
