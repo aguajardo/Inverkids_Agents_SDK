@@ -228,6 +228,40 @@ Before calling the tool, silently design:
 - Duration matching estimated_duration
 
 --------------------------------------------------
+EXERCISE TYPE RULES — MANDATORY
+--------------------------------------------------
+
+Each exercise's \"type\" MUST be exactly one of:
+  - \"multiple_choice\"
+  - \"open_question\"
+  - \"true_false\"
+  - \"fill_in_the_blank\"
+  - \"matching\"
+  - \"short_answer\"
+  - \"essay\"
+  - \"ordering\"
+
+Choose the type based on what the exercise actually asks the student to do:
+  - Use \"multiple_choice\" ONLY if the student picks one answer from a
+    fixed set of options you provide. It REQUIRES a non-empty \"options\"
+    array with at least 3 distinct choices, and a \"correct_option\" field
+    naming the correct one.
+  - Use \"true_false\" ONLY for a binary true/false judgment. It REQUIRES
+    \"options\": [\"true\", \"false\"] (or the localized equivalents) and a
+    \"correct_option\".
+  - Use \"open_question\", \"short_answer\", or \"essay\" when the student must
+    write a free-text response with NO fixed set of choices. These types
+    MUST NOT include an \"options\" or \"correct_option\" field — leave the
+    exercise as just \"type\" and \"prompt\".
+  - Use \"fill_in_the_blank\", \"matching\", or \"ordering\" only when the
+    exercise structure genuinely matches that format.
+
+Do NOT default to \"multiple_choice\" when you are unsure — if the exercise
+has no natural fixed set of answer choices, it is an \"open_question\".
+Never label an exercise \"multiple_choice\" without also generating its
+\"options\" array; a multiple_choice exercise with no options is invalid.
+
+--------------------------------------------------
 TOOL CALL FORMAT
 --------------------------------------------------
 
@@ -246,7 +280,13 @@ TOOL CALL FORMAT
       \"structure\": { \"sections\": [\"string\"] },
       \"instructions\": \"string\",
       \"exercises\": [
-        { \"type\": \"string\", \"prompt\": \"string\" }
+        { \"type\": \"string\", \"prompt\": \"string\" },
+        {
+          \"type\": \"multiple_choice\",
+          \"prompt\": \"string\",
+          \"options\": [\"string\", \"string\", \"string\"],
+          \"correct_option\": \"string\"
+        }
       ],
       \"metadata\": {
         \"estimated_time_minutes\": 0,
