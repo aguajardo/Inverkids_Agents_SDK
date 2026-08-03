@@ -1,4 +1,4 @@
-import { Agent, Runner, withTrace } from "@openai/agents";
+import { Agent, Runner, withTrace, hostedMcpTool } from "@openai/agents";
 import { z } from "zod";
 require("dotenv").config();
 
@@ -7,25 +7,38 @@ const SkillAssignmentOutputSchema = z.object({
   rationale: z.string(),
 });
 
+const skillsCatalogMcp = hostedMcpTool({
+  serverLabel: "Inverkids_Server",
+  allowedTools: ["get_all_skills_summary"],
+  requireApproval: "never",
+  serverUrl: "https://tools.inverkids.mx/mcp",
+});
+
 const skillAssignmentAgentInstructions = `You assign pedagogical skills (CHAs: competencias, habilidades, actitudes) to an activity component.
 
 You receive a JSON payload with:
 - activity: basic context about the parent activity (id, name, activity_type)
 - frame: the content frame this component belongs to
 - component: the specific component to assign skills to (id, component_type, data)
-- skills_catalog: the full list of valid skills to choose from, each with skill_id, description, ambito, subambito, skill_type
+
+You do NOT receive the skills catalog directly in this payload — it is too large to
+include inline. Instead, call the get_all_skills_summary tool ONCE to retrieve the
+full catalog (skill_id, description, ambito, subambito, skill_type, domain, dimension
+for every skill). Use its result as the only valid source of skill_ids.
 
 RULES:
-1. Use the activity as context and the component as the specific focus of the assignment.
-2. Choose only skill_id values that appear in the provided skills_catalog. Never invent ids.
-3. Choose the smallest set of skill_ids that accurately describe what this component assesses or develops.
-4. If nothing in the catalog reasonably applies, return an empty skill_ids array.
-5. Do not call any tools. Do not ask for clarification. Respond with the structured output only.`;
+1. Call get_all_skills_summary exactly ONCE per assignment, before deciding on skills.
+2. Use the activity as context and the component as the specific focus of the assignment.
+3. Choose only skill_id values that appear in the get_all_skills_summary result. Never invent ids.
+4. Choose the smallest set of skill_ids that accurately describe what this component assesses or develops.
+5. If nothing in the catalog reasonably applies, return an empty skill_ids array.
+6. Do not call get_all_skills_summary more than once. Do not ask for clarification. Respond with the structured output only.`;
 
 const skillAssignmentAgent = new Agent({
   name: "Component Skill Assignment Agent",
   instructions: skillAssignmentAgentInstructions,
   model: "gpt-4.1",
+  tools: [skillsCatalogMcp],
   outputType: SkillAssignmentOutputSchema,
   modelSettings: {
     temperature: 0.2,
