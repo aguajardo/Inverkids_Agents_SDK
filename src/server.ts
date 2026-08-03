@@ -30,7 +30,7 @@ app.post("/run", async (req, res) => {
   }
 });
 
-app.post("/assign-skills", async (req, res) => {
+app.post("/run/assign-skills", async (req, res) => {
   try {
     console.log("Received skill assignment request");
     const result = await runSkillAssignmentWorkflow(req.body);
