@@ -19,7 +19,7 @@ const mcp = hostedMcpTool({
   requireApproval: "never",
   serverUrl: "https://tools.inverkids.mx/mcp",
 });
-const fileSearch = fileSearchTool(["vs_696ed9e2f43c819182df51033c49775a"]);
+const fileSearch = fileSearchTool(["vs_6a7cc80811548191bc04707deb331468"]);
 
 // Shared client for guardrails and file search
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
