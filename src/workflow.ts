@@ -253,8 +253,19 @@ Choose the type based on what the exercise actually asks the student to do:
     write a free-text response with NO fixed set of choices. These types
     MUST NOT include an \"options\" or \"correct_option\" field — leave the
     exercise as just \"type\" and \"prompt\".
-  - Use \"fill_in_the_blank\", \"matching\", or \"ordering\" only when the
-    exercise structure genuinely matches that format.
+  - Use \"fill_in_the_blank\" when the student writes a missing word or
+    phrase into a blank. The prompt MUST contain one \"___\" placeholder
+    per blank, and the exercise REQUIRES a non-empty \"blanks\" array with
+    exactly one answer string per \"___\", in the same order.
+  - Use \"ordering\" when the student must arrange elements in sequence.
+    It REQUIRES an \"items\" array with 3 to 6 distinct strings listed in
+    the CORRECT order. Do NOT shuffle the items; the student document
+    shuffles them automatically.
+  - Use \"matching\" only when the exercise structure genuinely matches
+    that format.
+  - Exercises that are NOT \"fill_in_the_blank\" MUST NOT include a
+    \"blanks\" field, and exercises that are NOT \"ordering\" MUST NOT
+    include an \"items\" field.
 
 Do NOT default to \"multiple_choice\" when you are unsure — if the exercise
 has no natural fixed set of answer choices, it is an \"open_question\".
@@ -286,6 +297,16 @@ TOOL CALL FORMAT
           \"prompt\": \"string\",
           \"options\": [\"string\", \"string\", \"string\"],
           \"correct_option\": \"string\"
+        },
+        {
+          \"type\": \"fill_in_the_blank\",
+          \"prompt\": \"string with ___ placeholders\",
+          \"blanks\": [\"string\"]
+        },
+        {
+          \"type\": \"ordering\",
+          \"prompt\": \"string\",
+          \"items\": [\"first\", \"second\", \"third\"]
         }
       ],
       \"metadata\": {
