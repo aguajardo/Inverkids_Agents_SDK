@@ -17,6 +17,7 @@ const skillsCatalogMcp = hostedMcpTool({
 const skillAssignmentAgentInstructions = `You assign pedagogical skills (CHAs: competencias, habilidades, actitudes) to an activity component.
 
 You receive a JSON payload with:
+- white_label and level: the brand catalog and the level (grade) this component belongs to; either may be null
 - activity: basic context about the parent activity (id, name, activity_type)
 - frame: the content frame this component belongs to
 - component: the specific component to assign skills to (id, component_type, data)
@@ -34,6 +35,9 @@ If the component has very little text, derive keywords from the activity name in
 
 RULES:
 1. Call search_skills_by_keywords exactly ONCE per assignment, before deciding on skills.
+   If the payload has non-null white_label and level, pass BOTH to the tool exactly as given
+   (arguments white_label and level) so the results are restricted to skills of that level;
+   only skills of that level will be accepted. If either is null, omit both arguments.
 2. Use the activity as context and the component as the specific focus of the assignment.
 3. Choose only skill_id values that appear in the search_skills_by_keywords result. Never invent ids.
 4. Choose the smallest set of skill_ids that accurately describe what this component assesses or develops.
