@@ -2,6 +2,8 @@ import express from "express";
 import "dotenv/config";
 import { runWorkflow } from "./workflow";
 import { runSkillAssignmentWorkflow } from "./skillAssignmentWorkflow";
+import { randomUUID } from "crypto";
+import { logRequest } from "./requestLog";
 
 const app = express();
 app.use(express.json({ limit: "5mb" }));
@@ -19,13 +21,15 @@ app.use((req, res, next) => {
 });
 
 app.post("/run", async (req, res) => {
+  const started = Date.now();
+  const requestId = randomUUID();
   try {
-    console.log("Received request:", req.body);
-    const result = await runWorkflow(req.body);
-
-    res.json(result);
+    const result: any = await runWorkflow(req.body);
+    logRequest({ request_id: requestId, route: "/run", status: result.blocked ? "blocked" : "ok", duration_ms: Date.now() - started, input_chars: req.body?.input_as_text?.length ?? 0, ...result.meta });
+    res.status(result.blocked ? 422 : 200).json(result);
   } catch (error: any) {
     console.error("Workflow error:", error);
+    logRequest({request_id: requestId, route:"/run", status:"error", duration_ms: Date.now() - started, error: error?.message, input_chars: req.body?.input_as_text?.length ?? 0})
     res.status(500).json({ message: "Workflow failed" });
   }
 });

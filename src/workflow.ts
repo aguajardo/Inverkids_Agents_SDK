@@ -129,6 +129,25 @@ async function runAndApplyGuardrails(
   };
 }
 
+export function generatedActivityIdFrom(items: any[]): string | undefined {
+  const call = (items ?? []).find(
+    (i) => i?.rawItem?.type === "hosted_tool_call" && i?.rawItem?.name === "generate_activity"
+  );
+  try {
+    return JSON.parse(call.rawItem.output).generated_activity_id;
+  } catch {
+    return undefined;
+  }
+}
+
+function tokensOf(...results: { rawResponses: any[] }[]) {
+  const all = results.flatMap((r) => r.rawResponses ?? []);
+  return {
+    input_tokens: all.reduce((n, r) => n + (r.usage?.inputTokens ?? 0), 0),
+    output_tokens: all.reduce((n, r) => n + (r.usage?.outputTokens ?? 0), 0),
+  };
+}
+
 function buildGuardrailFailOutput(results: any[]) {
   const get = (name: string) =>
     (results ?? []).find(
@@ -514,7 +533,10 @@ export const runWorkflow = async (workflow: WorkflowInput) => {
       ? guardrailsFailOutput
       : guardrailsPassOutput;
     if (guardrailsHasTripwire) {
-      return guardrailsOutput;
+      const guardrails = Object.entries(guardrailsFailOutput)
+        .filter(([, v]: [string, any]) => v?.failed)
+        .map(([k]) => k);
+      return { blocked: true, message: "Solicitud bloqueada por moderación", meta: { guardrails } };
     } else {
       const requestNormalizerCurriculumResultTemp = await runner.run(
         requestNormalizerCurriculum,
@@ -550,10 +572,17 @@ export const runWorkflow = async (workflow: WorkflowInput) => {
         throw new Error("Agent result is undefined");
       }
 
-      const activityGeneratorPdfProducerResult = {
+      const normalized: any = requestNormalizerCurriculumResultTemp.finalOutput;
+      return {
         output_text: activityGeneratorPdfProducerResultTemp.finalOutput ?? "",
+        meta: {
+          level: normalized.academic_level,
+          language: normalized.language,
+          exercises: normalized.number_of_exercises,
+          ...tokensOf(requestNormalizerCurriculumResultTemp, activityGeneratorPdfProducerResultTemp),
+          generated_activity_id: generatedActivityIdFrom(activityGeneratorPdfProducerResultTemp.newItems),
+        },
       };
-      return activityGeneratorPdfProducerResult;
     }
   });
 };
