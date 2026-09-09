@@ -2,6 +2,7 @@ import express from "express";
 import "dotenv/config";
 import { runWorkflow } from "./workflow";
 import { runSkillAssignmentWorkflow } from "./skillAssignmentWorkflow";
+import { runRetryWorkflow } from "./retryWorkflow";
 import { randomUUID } from "crypto";
 import { logRequest } from "./requestLog";
 
@@ -70,6 +71,21 @@ app.post("/run/assign-skills", async (req, res) => {
     console.error("Skill assignment workflow error:", error);
     logRequest({ request_id: requestId, route: "/run/assign-skills", status: "error", duration_ms: Date.now() - started, error: error?.message, input_chars: inputChars });
     res.status(500).json({ message: "Skill assignment workflow failed" });
+  }
+});
+
+app.post("/run/retry", async (req, res) => {
+  const started = Date.now();
+  const requestId = randomUUID();
+  const inputChars = req.body?.input_as_text?.length ?? 0;
+  try {
+    const result = await runRetryWorkflow(req.body);
+    logRequest({ request_id: requestId, route: "/run/retry", source: "alternatives", status: "ok", duration_ms: Date.now() - started, input_chars: inputChars, ...result.meta });
+    res.json(result);
+  } catch (error: any) {
+    console.error("Retry workflow error:", error);
+    logRequest({ request_id: requestId, route: "/run/retry", source: "alternatives", status: "error", duration_ms: Date.now() - started, error: error?.message, input_chars: inputChars });
+    res.status(500).json({ message: "Retry workflow failed" });
   }
 });
 
