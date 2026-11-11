@@ -64,8 +64,8 @@ app.post("/run/assign-skills", async (req, res) => {
   const requestId = randomUUID();
   const inputChars = req.body?.input_as_text?.length ?? 0;
   try {
-    const result = await runSkillAssignmentWorkflow(req.body);
-    logRequest({ request_id: requestId, route: "/run/assign-skills", status: "ok", duration_ms: Date.now() - started, input_chars: inputChars });
+    const { usage, ...result } = await runSkillAssignmentWorkflow(req.body);
+    logRequest({ request_id: requestId, route: "/run/assign-skills", status: "ok", duration_ms: Date.now() - started, input_chars: inputChars, ...usage });
     res.json(result);
   } catch (error: any) {
     console.error("Skill assignment workflow error:", error);

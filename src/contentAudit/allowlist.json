@@ -1,0 +1,41 @@
+{
+  "_comentario": "Terminos que NO deben reportarse como error. Amplialo cuando el equipo detecte falsos positivos.",
+  "marca": [
+    "Inverkids",
+    "Inverstocks",
+    "Inverteens",
+    "Inverchallenge",
+    "Finkids",
+    "Bancolombia",
+    "Invercoins"
+  ],
+  "financieros": [
+    "Afore",
+    "Afores",
+    "SIEFORE",
+    "SB",
+    "CETES",
+    "FinTech",
+    "PropTech",
+    "InsurTech",
+    "CONDUSEF",
+    "SAT",
+    "RFC",
+    "ETF",
+    "NASDAQ",
+    "IPC",
+    "CAT",
+    "GAT",
+    "UDI",
+    "UDIS"
+  ],
+  "producto": [
+    "frame",
+    "frames",
+    "workbook",
+    "quiz",
+    "quizzes",
+    "toolbar",
+    "dashboard"
+  ]
+}
