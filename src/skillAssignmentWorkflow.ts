@@ -7,11 +7,14 @@ const SkillAssignmentOutputSchema = z.object({
   rationale: z.string(),
 });
 
+const MCP_SERVICE_KEY = process.env.MCP_SERVICE_KEY;
+
 const skillsCatalogMcp = hostedMcpTool({
   serverLabel: "Inverkids_Server",
   allowedTools: ["search_skills_by_keywords"],
   requireApproval: "never",
-  serverUrl: "https://tools.inverkids.mx/mcp",
+  serverUrl: process.env.MCP_URL || "https://tools.inverkids.mx/mcp",
+  ...(MCP_SERVICE_KEY ? { headers: { Authorization: `Bearer ${MCP_SERVICE_KEY}` } } : {}),
 });
 
 const skillAssignmentAgentInstructions = `You assign pedagogical skills (CHAs: competencias, habilidades, actitudes) to an activity component.

@@ -13,12 +13,18 @@ import { z } from "zod";
 require("dotenv").config();
 
 // Tool definitions
-const mcp = hostedMcpTool({
-  serverLabel: "Inverkids_Server",
-  allowedTools: ["generate_activity"],
-  requireApproval: "never",
-  serverUrl: "https://tools.inverkids.mx/mcp",
-});
+const MCP_URL = process.env.MCP_URL || "https://tools.inverkids.mx/mcp";
+const JOB_TOKEN_PREFIX = "ikj_";
+
+const mcpFor = (jobToken?: string) =>
+  hostedMcpTool({
+    serverLabel: "Inverkids_Server",
+    allowedTools: ["generate_activity"],
+    requireApproval: "never",
+    serverUrl: MCP_URL,
+    ...(jobToken ? { headers: { Authorization: `Bearer ${jobToken}` } } : {}),
+  });
+const mcp = mcpFor();
 const fileSearch = fileSearchTool(["vs_6a7cc80811548191bc04707deb331468"]);
 
 // Shared client for guardrails and file search
@@ -499,7 +505,12 @@ a structured error JSON. Do NOT guess or fill missing data.
   },
 });
 
-type WorkflowInput = { input_as_text: string };
+type WorkflowInput = { input_as_text: string; job_token?: unknown };
+
+const jobTokenFrom = (workflow: WorkflowInput): string | undefined =>
+  typeof workflow.job_token === "string" && workflow.job_token.startsWith(JOB_TOKEN_PREFIX)
+    ? workflow.job_token
+    : undefined;
 
 // Main code entrypoint
 export const runWorkflow = async (workflow: WorkflowInput) => {
@@ -553,8 +564,12 @@ export const runWorkflow = async (workflow: WorkflowInput) => {
         ),
         output_parsed: requestNormalizerCurriculumResultTemp.finalOutput,
       };
+      const jobToken = jobTokenFrom(workflow);
+      const activityGenerator = jobToken
+        ? activityGeneratorPdfProducer.clone({ tools: [mcpFor(jobToken)] })
+        : activityGeneratorPdfProducer;
       const activityGeneratorPdfProducerResultTemp = await runner.run(
-        activityGeneratorPdfProducer,
+        activityGenerator,
         [...conversationHistory],
         {
           context: {
